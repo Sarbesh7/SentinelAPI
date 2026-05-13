@@ -1,0 +1,7 @@
+Django
+djangorestframework
+djangorestframework-simplejwt
+Pillow
+django-filter
+drf-spectacular
+psycopg2-binary
