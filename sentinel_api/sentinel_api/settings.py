@@ -38,12 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'drf_spectacular',
     'accounts',
     'core',
     'responses',
     'notifications',
     'incidents',
-    
 ]
 
 MIDDLEWARE = [
@@ -125,13 +126,23 @@ STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'accounts.User'
 
 REST_FRAMEWORK = {
-
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     )
 }
- 
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Sentinel API',
+    'DESCRIPTION': 'Emergency response and incident management API',
+    'VERSION': '1.0.0',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+}
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
