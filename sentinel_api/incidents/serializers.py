@@ -7,6 +7,7 @@ class IncidentSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Incident
         fields = '__all__'
+        read_only_fields = ['reported_by', 'reported_at']
         
     def create(self, validated_data):
         request = self.context.get('request')
