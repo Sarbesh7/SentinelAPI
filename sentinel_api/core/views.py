@@ -28,7 +28,7 @@ class CitizenDashboard(APIView):
 
     def get(self, request):
         user = request.user
-        incidents = Incident.objects.filter(reported_by=user).order_by('-created_at')
+        incidents = Incident.objects.filter(reported_by=user).order_by('-reported_at')
         serializer = IncidentSerializer(incidents, many=True)
         pending_incidents = incidents.filter(status='Pending').count()
         resolved_incidents = incidents.filter(status='Resolved').count()
@@ -43,7 +43,7 @@ class ResponderDashboard(APIView):
 
     def get(self, request):
         user = request.user
-        assigned_incidents = Incident.objects.filter(assigned_to=user).order_by('-created_at')
+        assigned_incidents = Incident.objects.filter(assigned_to=user).order_by('-reported_at')
         serializer = IncidentSerializer(assigned_incidents, many=True)
         pending_incidents = assigned_incidents.filter(status='Pending').count()
         resolved_incidents = assigned_incidents.filter(status='Resolved').count()
@@ -57,7 +57,7 @@ class AdminDashboard(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        incidents = Incident.objects.all().order_by('-created_at')
+        incidents = Incident.objects.all().order_by('-reported_at')
         serializer = IncidentSerializer(incidents, many=True)
         return Response(serializer.data)
 
@@ -65,13 +65,20 @@ class AdminDashboard(APIView):
 class AdminUserManagement(APIView):
     permission_classes = [IsAdminUser]
 
-    def get(self, request):
-    
-        #get all users
-    
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data)
+    def get(self, request, user_id=None):
+        if user_id:
+            # Get a specific user
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        else:
+            # Get all users
+            users = User.objects.all()
+            serializer = UserSerializer(users, many=True)
+            return Response(serializer.data)
 
     def put(self, request, user_id):
         try:
