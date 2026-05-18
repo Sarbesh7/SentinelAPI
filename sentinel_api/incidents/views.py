@@ -4,15 +4,12 @@ from . import serializers
 from . import models
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.permissions import BasePermission
 from accounts.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-class IsAdmin(BasePermission):
-    def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated and request.user.role == 'admin'
 class IsResponder(BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated and request.user.role == 'responder'
@@ -24,7 +21,7 @@ class IncidentView(APIView):
     
     def get_permissions(self):
         if self.request.method == 'GET':
-            return [IsAdmin()]
+            return [IsAdminUser()]
         return [IsAuthenticated()]
     
     def get(self, request):
@@ -69,7 +66,7 @@ class IncidentDetailView(APIView):
         if self.request.method == 'PUT':
             return [IsResponder()]
         elif self.request.method == 'DELETE':
-            return [IsAdmin()]
+            return [IsAdminUser()]
         return [IsAuthenticated()]
     
     
@@ -92,6 +89,15 @@ class IncidentDetailView(APIView):
         incident=self.get_object(id)
         if not incident:
             return Response({'error':"Incident not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check if user has permission to update this incident
+        # Responders can only update incidents assigned to them
+        if request.user.role == 'responder' and incident.assigned_to != request.user:
+            return Response({'error': 'You can only update incidents assigned to you'}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Citizens can only update their own reported incidents
+        if request.user.role == 'citizen' and incident.reported_by != request.user:
+            return Response({'error': 'You can only update your own incidents'}, status=status.HTTP_403_FORBIDDEN)
         
         serializer=serializers.IncidentSerializer(incident, data=request.data, partial=True)
         if serializer.is_valid():

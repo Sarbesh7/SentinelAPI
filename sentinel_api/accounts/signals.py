@@ -14,3 +14,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             CitizenProfile.objects.create(user=instance)
         elif instance.role == 'responder':
             ResponderProfile.objects.create(user=instance)
+        elif instance.role == 'admin':
+            # Admin users don't need profiles, just set is_staff flag
+            instance.is_staff = True
+            instance.save()

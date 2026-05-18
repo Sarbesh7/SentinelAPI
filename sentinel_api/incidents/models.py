@@ -33,8 +33,10 @@ class Incident(models.Model):
     priority=models.CharField(max_length=20, choices=priority_choices, default='medium')
     status=models.CharField(max_length=20, choices=status_choices, default='reported')
     
-    reported_by=models.ForeignKey(User, on_delete=models.CASCADE) #reported user
+    reported_by=models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_incidents') #reported user
+    assigned_to=models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_incidents') #assigned responder
     reported_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return self.title
