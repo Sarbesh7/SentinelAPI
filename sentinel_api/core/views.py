@@ -30,8 +30,8 @@ class CitizenDashboard(APIView):
         user = request.user
         incidents = Incident.objects.filter(reported_by=user).order_by('-reported_at')
         serializer = IncidentSerializer(incidents, many=True)
-        pending_incidents = incidents.filter(status='Pending').count()
-        resolved_incidents = incidents.filter(status='Resolved').count()
+        pending_incidents = incidents.filter(status='reported').count()
+        resolved_incidents = incidents.filter(status='resolved').count()
         return Response({
             'pending_incidents': pending_incidents,
             'resolved_incidents': resolved_incidents,
@@ -45,10 +45,12 @@ class ResponderDashboard(APIView):
         user = request.user
         assigned_incidents = Incident.objects.filter(assigned_to=user).order_by('-reported_at')
         serializer = IncidentSerializer(assigned_incidents, many=True)
-        pending_incidents = assigned_incidents.filter(status='Pending').count()
-        resolved_incidents = assigned_incidents.filter(status='Resolved').count()
+        pending_incidents = assigned_incidents.filter(status='reported').count()
+        in_progress_incidents = assigned_incidents.filter(status='in_progress').count()
+        resolved_incidents = assigned_incidents.filter(status='resolved').count()
         return Response({
             'pending_incidents': pending_incidents,
+            'in_progress_incidents': in_progress_incidents,
             'resolved_incidents': resolved_incidents,
             'assigned_incidents': serializer.data
         })

@@ -14,3 +14,18 @@ def create_incident_notification(sender, instance, created, **kwargs):
             message=message,
             is_read=False
         )
+        
+ #for status change notifications       
+@receiver(pre_save, sender=Incident)
+def notify_on_status_change(sender, instance, **kwargs):
+    try:
+        old_instance = Incident.objects.get(pk=instance.pk)
+        if old_instance.status != instance.status:
+            
+            
+            Notification.objects.create(
+                user=instance.reported_by,
+                message=f"Incident status changed to {instance.status}"
+            )
+    except Incident.DoesNotExist:
+        pass

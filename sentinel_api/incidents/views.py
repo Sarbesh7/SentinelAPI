@@ -21,12 +21,17 @@ class IncidentView(APIView):
     
     def get_permissions(self):
         if self.request.method == 'GET':
-            return [IsAdminUser()]
+            return [IsAuthenticated()]
         return [IsAuthenticated()]
     
     def get(self, request):
         incidents = models.Incident.objects.all()
         
+        if request.user.role == 'citizen':
+         incidents = incidents.filter(reported_by=request.user)
+        elif request.user.role == 'responder':
+          incidents = incidents.filter(assigned_to=request.user)
+          
         # Filter by category
         category = request.query_params.get('category')
         if category:
